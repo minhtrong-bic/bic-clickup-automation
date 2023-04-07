@@ -1,0 +1,23 @@
+name: 'Hello World'
+description: 'Greet someone and record the time'
+inputs:
+  clickUpTaskIdReg:  # id of input
+    description: 'Task id javascript regular expression to detect task id'
+    required: true
+    default: 'BEIN-\d+'
+  clickUpTeamId: # id of input
+    description: 'Clickup team Id'
+    required: true
+  clickUpToken: # id of input
+    description: 'Clickup Personal Access Token'
+    required: true
+  triggerPrefixes: # id of input
+    description: 'List of PR prefixes will trigger automation status changing'
+    default: 'DEV,STG,RLS,PRD'
+    required: true
+outputs:
+  time: # id of output
+    description: 'The time we greeted you'
+runs:
+  using: 'node16'
+  main: 'index.js'
