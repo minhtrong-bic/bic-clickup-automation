@@ -1,23 +1,53 @@
-# Hello world javascript action
+# Auto change ClickUp Ticket Status Github action
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+This action changes ClickUp ticket by get ticket id by using RegExp and looking up the Id from PR's title
+The status of the ticket is determined by the target branch of PR
 
 ## Inputs
 
-### `who-to-greet`
+### `clickUpTaskIdReg`
+*Javascript regular expression to detect task id.*
 
-**Required** The name of the person to greet. Default `"World"`.
+**Required**.
 
-## Outputs
+**Default**: 'BEIN-\d+'
 
-### `time`
+### `clickUpTeamId`
+*ClickUp team Id, should be a Github secret*
 
-The time we greeted you.
+**Required**.
 
-## Example usage
 
+### `clickUpToken`
+*ClickUp Personal Token that is used to call ClickUp API, should be a Github secret*
+
+**Required**.
+
+### `triggerPrefixes`
+*List of PR prefixes will trigger automation status changing, separated by comma.*
+
+**Required**.
+
+**Example**: 'DEV,STG,RLS,PRD'
+
+## Example workflow file
 ```yaml
-uses: actions/hello-world-javascript-action@v1.1
-with:
-  who-to-greet: 'Mona the Octocat'
+on:
+  pull_request:
+    types:
+      - closed
+jobs:
+  change_clickup_status:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    name: Change ClickUp Ticket Status
+    steps:
+      - name: Change ClickUp Ticket Status
+        id: auto_change_clickup_status
+        uses: minhtrong-bic/bic-clickup-automation@v1.0.0
+        with:
+          clickUpTaskIdReg: 'BEIN-\d+'
+          clickUpTeamId: ${{ secrets.CLICKUP_TEAM_ID }}
+          clickUpToken: ${{ secrets.CLICKUP_TOKEN }}
+          triggerPrefixes: 'DEV,STG,RLS,PRD'
 ```
