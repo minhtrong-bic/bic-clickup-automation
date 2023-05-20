@@ -3,6 +3,7 @@ const github = require('@actions/github');
 const axios = require('axios');
 
 const CLICKUP_API = 'https://api.clickup.com/api/v2/task/';
+const AUTO_DOWN_LABEL = 'auto-down';
 
 try {
     const headBranch = github.context.payload.pull_request.head.ref;
@@ -12,27 +13,20 @@ try {
     const reg = new RegExp(core.getInput('clickUpTaskIdReg'), 'i');
     const taskId = reg.exec(title);
 
-    const triggerPrefixes = core.getInput('triggerPrefixes').split(',');
-    let shouldActive = false;
-    for (let i = 0; i < triggerPrefixes.length; i++) {
-        shouldActive = title.indexOf(triggerPrefixes[i]) === 0;
-        if (shouldActive) {
-            break;
-        }
+    const labels = github.context.payload.pull_request.labels;
+    if (labels.some(label => label.name === AUTO_DOWN_LABEL)) {
+        console.log('Do not change ClickUp status');
+        return;
     }
-
-    console.log(`Head Branch: ${headBranch}`);
-    console.log(`Target Branch: ${targetBranch}`);
-    console.log(`PR Title: ${title}`);
 
     let newStatus = null;
     if (targetBranch === 'master') {
         newStatus = 'PRODUCTION';
-    } else if (shouldActive && targetBranch === 'develop') {
+    } else if (targetBranch === 'develop') {
         newStatus = 'MERGED';
-    } else if (shouldActive && targetBranch === 'staging') {
+    } else if (targetBranch === 'staging') {
         newStatus = 'STG TESTING';
-    } else if (shouldActive && targetBranch.indexOf('release') === 0) {
+    } else if (targetBranch.indexOf('release') === 0) {
         newStatus = 'RELEASING TESTING';
     }
 
